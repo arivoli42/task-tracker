@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const { MongoMemoryServer } = require('mongodb-memory-server');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -22,19 +21,18 @@ app.get('/', (req, res) => {
     res.send('Task Tracker API is running');
 });
 
-// Database Connection & Server Start
 const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI; // Set this in your hosting provider (Render)
 
 const startServer = async () => {
     try {
-        const mongoServer = await MongoMemoryServer.create();
-        const mongoUri = mongoServer.getUri();
-        await mongoose.connect(mongoUri);
-        console.log(`In-Memory MongoDB connected at ${mongoUri}`);
-
-        app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
-        });
+        if (!MONGO_URI) {
+            console.warn("⚠️ MONGO_URI is not defined! Ensure you have set it in your environment variables.");
+        } else {
+            await mongoose.connect(MONGO_URI);
+            console.log('MongoDB Atlas connected');
+        }
+        app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     } catch (err) {
         console.error('Database connection error:', err);
     }

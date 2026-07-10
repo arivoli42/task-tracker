@@ -24,13 +24,25 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI; // Set this in your hosting provider (Render)
 
+const { MongoMemoryServer } = require('mongodb-memory-server');
+
 const startServer = async () => {
     try {
         if (!MONGO_URI) {
-            console.warn("⚠️ MONGO_URI is not defined! Ensure you have set it in your environment variables.");
+            console.warn("⚠️ MONGO_URI is not defined! Starting in-memory database...");
+            const mongoServer = await MongoMemoryServer.create();
+            await mongoose.connect(mongoServer.getUri());
+            console.log('Connected to In-Memory MongoDB');
         } else {
-            await mongoose.connect(MONGO_URI);
-            console.log('MongoDB Atlas connected');
+            try {
+                await mongoose.connect(MONGO_URI);
+                console.log('MongoDB Atlas connected');
+            } catch (err) {
+                console.error(`Atlas Connection Failed (${err.message}). Starting temporary In-Memory MongoDB...`);
+                const mongoServer = await MongoMemoryServer.create();
+                await mongoose.connect(mongoServer.getUri());
+                console.log('Connected to In-Memory MongoDB successfully!');
+            }
         }
         app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     } catch (err) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { AuthContext } from '../context/AuthContext';
 import TaskForm from '../components/TaskForm';
 import TaskItem from '../components/TaskItem';
@@ -26,7 +26,7 @@ export default function Dashboard() {
 
     const fetchTasks = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/tasks');
+            const res = await api.get('/api/tasks');
             setTasks(res.data);
         } catch (err) {
             console.error('Failed to fetch tasks', err);
@@ -37,21 +37,21 @@ export default function Dashboard() {
 
     const handleAddTask = async (taskData) => {
         try {
-            const res = await axios.post('http://localhost:5000/api/tasks', taskData);
+            const res = await api.post('/api/tasks', taskData);
             setTasks(prev => [res.data, ...prev]);
         } catch (err) { console.error('Failed to add task', err); }
     };
 
     const handleDeleteTask = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/api/tasks/${id}`);
+            await api.delete(`/api/tasks/${id}`);
             setTasks(prev => prev.filter(t => t._id !== id));
         } catch (err) { console.error('Failed to delete task', err); }
     };
 
     const handleUpdateTask = async (id, updatedTask) => {
         try {
-            const res = await axios.put(`http://localhost:5000/api/tasks/${id}`, updatedTask);
+            const res = await api.put(`/api/tasks/${id}`, updatedTask);
             setTasks(prev => prev.map(t => (t._id === id ? res.data : t)));
         } catch (err) { console.error('Failed to update task', err); }
     };
